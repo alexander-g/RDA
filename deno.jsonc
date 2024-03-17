@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "deno.ns"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "https://esm.sh/preact@10.11.3",
+
+    //to make sure that [][0] gives undefined
+    "noUncheckedIndexedAccess": true
+  },
+  "lock": false,
+  "tasks": {
+    "cache": "./deno.sh cache ./main.ts src/dep.ts tests/testcases/dep.ts https://esm.sh/preact@10.11.3/jsx-runtime"
+  }
+}
