@@ -1,14 +1,20 @@
-#!./deno.sh run --no-prompt --unstable --allow-ffi --allow-net=0.0.0.0:5050,cdn.jsdelivr.net --allow-read --allow-write=./ --allow-env=DENO_DIR
+#!./deno.sh run --no-prompt --unstable --allow-ffi --allow-net=0.0.0.0:5050,cdn.jsdelivr.net,download.pytorch.org --allow-read --allow-write=./ --allow-env=DENO_DIR
 
 import * as server from "./base/server.ts"
 import * as agar   from "./src/common/agar.ts"
-import { base }    from "./src/common/dep.ts"
+import { ensure_libtorch } from "./src/backend/fetch_libtorch.ts";
 
 //TODO:
 import { path } from "./base/backend/ts/dep.ts"
 
 
 if(import.meta.main){
+    const torchstatus:true|Error = await ensure_libtorch('./assets')
+    if(torchstatus instanceof Error){
+        console.log(torchstatus.message);
+        Deno.exit(1);
+    }
+
     const rootpath:string = path.fromFileUrl(
         import.meta.resolve('./')
     );
