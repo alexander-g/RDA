@@ -5,10 +5,26 @@ import * as agar   from "./src/common/agar.ts"
 import { ensure_libtorch } from "./src/backend/fetch_libtorch.ts";
 
 //TODO:
-import { path } from "./base/backend/ts/dep.ts"
+import { path, flags } from "./base/backend/ts/dep.ts"
+
+
+
+function parse_args(): Record<string, string> {
+    const args:Record<string, string>  = flags.parse(
+        Deno.args, 
+        {
+            default:{recompile:true},
+            negatable:['recompile'],
+        }
+    )
+    return args;
+}
+
 
 
 if(import.meta.main){
+    const args:Record<string, string> = parse_args()
+
     const torchstatus:true|Error = await ensure_libtorch('./assets')
     if(torchstatus instanceof Error){
         console.log(torchstatus.message);
@@ -30,6 +46,7 @@ if(import.meta.main){
         }, 
         agar.AgarRootDetectionResult,
         join(rootpath, './assets/libTSinterface.so'),
-        join(rootpath, './models/')
+        join(rootpath, './models/'),
+        Boolean(args.recompile),
     )).run()
 }
