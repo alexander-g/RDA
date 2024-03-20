@@ -9,6 +9,6 @@
   },
   "lock": false,
   "tasks": {
-    "cache": "./deno.sh cache ./main.ts src/dep.ts tests/testcases/dep.ts https://esm.sh/preact@10.11.3/jsx-runtime"
+    "cache": "deno cache ./main.ts src/dep.ts tests/testcases/dep.ts https://esm.sh/preact@10.11.3/jsx-runtime"
   }
 }

@@ -22,7 +22,10 @@ const LIBTORCH_URLs:{[K in OS]:URL} = {
 
 const LIBTORCH_FILES:{[K in OS]:string[]} = {
     linux:   ['libtorch.so', 'libtorch_cpu.so', 'libc10.so', 'libgomp-a34b3233.so.1'],
-    windows: ['torch.dll', 'torch_cpu.dll', 'c10.dll'],
+    windows: [
+        'torch.dll', 'torch_cpu.dll', 'c10.dll', 
+        'uv.dll', 'asmjit.dll', 'libiomp5md.dll', 'fbgemm.dll'
+    ],
 }
 
 
@@ -73,13 +76,16 @@ async function unzip_libtorch(destination:string, zipfile:Blob): Promise<true|Er
     }
 
     const filenames:string[] = LIBTORCH_FILES[os];
-    const libpath = 'libtorch/lib/';
+    const libpath = 'libtorch/lib';
     for(const filename of filenames){
-        const unzipped_file:File|undefined = zipcontent[path.join(libpath, filename)]
+        //NOTE: not using path.join because it will join with backslash on windows
+        const filepath = `${libpath}/${filename}`;
+        const unzipped_file:File|undefined = zipcontent[filepath]
         if(unzipped_file == undefined)
             return new Error(`File ${filename} missing in zipfile`)
         
         const data = new Uint8Array(await unzipped_file.arrayBuffer())
+        fs.ensureDirSync(destination)
         Deno.writeFileSync(path.join(destination, filename), data);
     }
     return true;

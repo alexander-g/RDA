@@ -1,6 +1,5 @@
 name: Build
 
-
 on:
   workflow_dispatch:
     inputs:
@@ -9,13 +8,18 @@ on:
         required: true
         type: choice
         options:
-          - ubuntu-latest
           - windows-latest
+          - ubuntu-latest
           #- macos-latest
 
-
 jobs:
-  execute-workflow:
+  build-cpp-interface:
+    uses: alexander-g/traininglib/.github/workflows/build.yml@main
+    with:
+      os: ${{ inputs.os }}
+      tests: false
+
+  build-ui:
     runs-on: ${{ inputs.os }}
 
     steps:
@@ -23,29 +27,56 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Checkout traininglib
-        uses: actions/checkout@v4
-        with:
-          repository: alexander-g/traininglib
-          path: traininglib
-
-      - name: Build C++ interface
+      - name: Debug
         run: |
-          cd traininglib
-          gh workflow run tests.yml -f os=${{ inputs.os }}
-          cd ..
-          mkdir assets
-          cp traininglib/cpp/build/*.so ./assets/
-          cp traininglib/cpp/build/**/TSinterface.dll ./assets/
-      
+          ls -R
+
       - name: Build UI
         run: |
-          bash ./build.sh
+          git submodule update
+          bash -xe ./build.sh
       
       - name: Archive
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: ui-build
           path: |
             main
+            main.exe
+            static/*
+            models/models.json
           retention-days: 1
+  
+  package:
+    runs-on: ${{ inputs.os }}
+    needs:   [build-cpp-interface, build-ui]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      
+      - run: ls -R
+
+      - name: re-order
+        run: |
+          bash -c 'find ./ -name static -exec cp -r {} ./static \;'
+          mkdir -p ./assets
+          bash -c 'find ./ -name TSinterface.dll    -exec cp {} ./assets/ \;'
+          bash -c 'find ./ -name libTSinterface.so  -exec cp {} ./assets/ \;'
+          bash -c 'find ./ -name main      -exec cp {} ./assets/ \;'
+          bash -c 'find ./ -name main.exe  -exec cp {} ./assets/ \;'
+          mkdir -p models
+          bash -c 'find ./ -name models.json  -exec cp {} ./models/ \;'
+          rm -r artifacts
+          bash -c 'echo "SET ROOT_PATH=%~dp0" > main.bat'
+          bash -c 'echo "assets\main.exe %*" >> main.bat'
+          bash -c 'echo "pause"              >> main.bat'
+      
+      - name: Zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged
+          path: ./*
+          retention-days: 1
+
+    

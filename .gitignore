@@ -1,4 +1,6 @@
 static/
-models/
+models/*
+!models/models.json
 assets/
-tests/
+tests/*
+!tests/testcases

@@ -1,0 +1,1 @@
+export * from "../../base/tests/testcases_deno/dep.ts"
