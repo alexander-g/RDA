@@ -1,0 +1,51 @@
+name: Build
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Operating System'
+        required: true
+        type: choice
+        options:
+          - ubuntu-latest
+          - windows-latest
+          #- macos-latest
+
+
+jobs:
+  execute-workflow:
+    runs-on: ${{ inputs.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Checkout traininglib
+        uses: actions/checkout@v4
+        with:
+          repository: alexander-g/traininglib
+          path: traininglib
+
+      - name: Build C++ interface
+        run: |
+          cd traininglib
+          gh workflow run tests.yml -f os=${{ inputs.os }}
+          cd ..
+          mkdir assets
+          cp traininglib/cpp/build/*.so ./assets/
+          cp traininglib/cpp/build/**/TSinterface.dll ./assets/
+      
+      - name: Build UI
+        run: |
+          bash ./build.sh
+      
+      - name: Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: |
+            main
+          retention-days: 1
