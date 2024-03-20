@@ -15,14 +15,10 @@ on:
 
 
 jobs:
-  execute-workflow:
+  build:
     runs-on: ${{ inputs.os }}
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-
       - name: Checkout traininglib
         uses: actions/checkout@v4
         with:
@@ -37,7 +33,14 @@ jobs:
           mkdir assets
           cp traininglib/cpp/build/*.so ./assets/
           cp traininglib/cpp/build/**/TSinterface.dll ./assets/
+        env:
+          GH_TOKEN: ${{ github.token }}
       
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
       - name: Build UI
         run: |
           bash ./build.sh
