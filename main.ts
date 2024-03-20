@@ -47,6 +47,9 @@ if(import.meta.main){
         agar.AgarRootDetectionResult,
         join(rootpath, './assets/libTSinterface.so'),
         join(rootpath, './models/'),
+        //recompile if not --no-recompile
         Boolean(args.recompile),
+        //open webbrowser if --no-recompile
+        !(args.recompile),
     )).run()
 }
