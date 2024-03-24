@@ -10,7 +10,8 @@ on:
         options:
           - windows-latest
           - ubuntu-latest
-          #- macos-latest
+          #- macos-latest # = macos-12
+          #- macos-14     # M1
 
 jobs:
   build-cpp-interface:
@@ -57,26 +58,18 @@ jobs:
       
       - run: ls -R
 
+      - uses: actions/checkout@v4
+        with:
+          path:       ./repo/
+          submodules: 'recursive'
+
       - name: re-order
         run: |
-          bash -c 'find ./ -name static -exec cp -r {} ./static \;'
-          mkdir -p ./assets
-          bash -c 'find ./ -name TSinterface.dll    -exec cp {} ./assets/ \;'
-          bash -c 'find ./ -name libTSinterface.so  -exec cp {} ./assets/ \;'
-          bash -c 'find ./ -name main      -exec cp {} ./assets/ \;'
-          bash -c 'find ./ -name main.exe  -exec cp {} ./assets/ \;'
-          mkdir -p models
-          bash -c 'find ./ -name models.json  -exec cp {} ./models/ \;'
-          rm -r artifacts
-          bash -c 'echo "SET ROOT_PATH=%~dp0" > main.bat'
-          bash -c 'echo "assets\main.exe %*" >> main.bat'
-          bash -c 'echo "pause"              >> main.bat'
+          bash -xe repo/.github/workflows/scripts/reorder-for-package-${{ inputs.os }}.sh
       
       - name: Zip
         uses: actions/upload-artifact@v4
         with:
           name: packaged
-          path: ./*
+          path: ./package/*
           retention-days: 1
-
-    

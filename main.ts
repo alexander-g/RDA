@@ -1,4 +1,4 @@
-#!./deno.sh run --no-prompt --unstable --allow-ffi --allow-net=0.0.0.0:5050,cdn.jsdelivr.net,download.pytorch.org --allow-read --allow-write=./ --allow-env=DENO_DIR
+#!./deno.sh run --no-prompt --unstable --allow-ffi --allow-net=0.0.0.0:5050,cdn.jsdelivr.net,download.pytorch.org,github.com,objects.githubusercontent.com --allow-read --allow-write=./ --allow-env=DENO_DIR
 
 import * as server from "./base/server.ts"
 import * as agar   from "./src/common/agar.ts"
@@ -50,8 +50,7 @@ if(import.meta.main){
     const rootpath:string 
         = args.devmode? path.fromFileUrl(import.meta.resolve('./')) : './';
     const ts_lib_filename:string 
-        //= Deno.build.os == 'windows' ? 'torch.dll' : 'libTSinterface.so';
-        = Deno.build.os == 'windows' ? 'TSinterface.dll' : 'libTSinterface.so';
+        = Deno.build.os == 'windows' ? 'TSinterface.dll.enc' : 'libTSinterface.so';
     const ts_lib_path:string = path.join('assets', ts_lib_filename)
 
     const app = new server.App(
